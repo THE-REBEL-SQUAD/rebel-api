@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>🔥 Rebel API Dashboard</title>
+<style>
+body{background:#0b0f14;color:#0f0;font-family:monospace;padding:20px}
+.api{border:1px solid #0f0;padding:10px;margin:10px 0}
+.ok{color:#0f0}
+.bad{color:#f00}
+</style>
+</head>
+<body>
+
+<h1>🚀 REBEL AUTO API DASHBOARD</h1>
+<div id="list">Loading...</div>
+
+<script>
+async function load() {
+  const box = document.getElementById("list");
+  const r = await fetch("/__routes");
+  const data = await r.json();
+  box.innerHTML = "";
+
+  for (const api of data.routes) {
+    const div = document.createElement("div");
+    div.className = "api";
+    const id = btoa(api.path).replace(/=/g,"");
+
+    div.innerHTML = `
+      <b>${api.method}</b> <code>${api.path}</code><br>
+      ${api.desc}<br>
+      <span id="${id}">⏳ checking...</span>
+    `;
+    box.appendChild(div);
+
+    try {
+      const h = await fetch("/__health?path=" + encodeURIComponent(api.path));
+      const j = await h.json();
+      document.getElementById(id).innerHTML =
+        j.ok ? "🟢 RUNNING" : "🔴 DOWN";
+    } catch {
+      document.getElementById(id).innerHTML = "🔴 DOWN";
+    }
+  }
+}
+load();
+</script>
+
+<footer>
+<br>© MD ARIFUL ISLAM ASIF — THE REBEL SQUAD
+</footer>
+
+</body>
+</html>
