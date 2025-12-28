@@ -1,32 +1,51 @@
 const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const path = require("path");
-const { loadKeys } = require("../config/keys");
-
 const app = express();
 
-app.use(cors());
-app.use(helmet());
 app.use(express.json());
-app.use(express.static(path.join(process.cwd(), "public")));
 
-let loaded = false;
-app.use(async (req, res, next) => {
-  if (!loaded) {
-    await loadKeys();
-    loaded = true;
-  }
-  next();
-});
-
-// routes
-app.use(require("../routes/system.route"));
-app.use(require("../routes/binlookup"));
-// add more routes here
-
+// -------- HEALTH --------
 app.get("/", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "public/index.html"));
+  res.json({
+    ok: true,
+    message: "REBEL API RUNNING (VERCEL SAFE)"
+  });
 });
 
-module.exports = app; // ❌ NO listen
+// -------- ROUTE LIST --------
+const routes = [
+  { path: "/ping", method: "GET" },
+  { path: "/api/bin?bin=457173", method: "GET" },
+  { path: "/api/shorten?url=https://google.com", method: "GET" }
+];
+
+app.get("/__routes", (req, res) => {
+  res.json({
+    success: true,
+    total: routes.length,
+    routes
+  });
+});
+
+// -------- PING --------
+app.get("/ping", (req, res) => {
+  res.json({ pong: true });
+});
+
+// -------- BIN (SAFE) --------
+app.get("/api/bin", async (req, res) => {
+  res.json({
+    bin: req.query.bin || null,
+    country: "Demo",
+    status: "OK"
+  });
+});
+
+// -------- SHORTENER (SAFE) --------
+app.get("/api/shorten", async (req, res) => {
+  res.json({
+    long: req.query.url || null,
+    short: "https://is.gd/demo"
+  });
+});
+
+module.exports = app; // 🔴 MUST
