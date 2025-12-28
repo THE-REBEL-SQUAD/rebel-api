@@ -14,17 +14,20 @@ app.use(express.static(path.join(process.cwd(), "public")));
 let loaded = false;
 app.use(async (req, res, next) => {
   if (!loaded) {
-    await loadKeys();
-    loaded = true;
+    try {
+      await loadKeys();
+      loaded = true;
+    } catch (e) {
+      console.error("Key load failed:", e.message);
+    }
   }
   next();
 });
 
-// routes
-app.use(require("../routes/movie.route"));
+// ONLY SAFE ROUTES
 app.use(require("../routes/system.route"));
+app.use(require("../routes/movie.route"));
 
-// dashboard
 app.get("/", (req, res) => {
   res.sendFile(path.join(process.cwd(), "public/index.html"));
 });
