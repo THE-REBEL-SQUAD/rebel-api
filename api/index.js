@@ -1,7 +1,7 @@
 const express = require("express");
-const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
+const path = require("path");
 const { loadKeys } = require("../config/keys");
 
 const app = express();
@@ -14,22 +14,19 @@ app.use(express.static(path.join(process.cwd(), "public")));
 let loaded = false;
 app.use(async (req, res, next) => {
   if (!loaded) {
-    try {
-      await loadKeys();
-      loaded = true;
-    } catch (e) {
-      console.error("Key load failed:", e.message);
-    }
+    await loadKeys();
+    loaded = true;
   }
   next();
 });
 
-// ONLY SAFE ROUTES
+// routes
 app.use(require("../routes/system.route"));
-app.use(require("../routes/movie.route"));
+app.use(require("../routes/binlookup"));
+// add more routes here
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(process.cwd(), "public/index.html"));
 });
 
-module.exports = app;
+module.exports = app; // ❌ NO listen
